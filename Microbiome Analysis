@@ -1,0 +1,139 @@
+#Integrated pipeline for the in-silico analysis of 16s rRNA raw sequence microbiome data.
+#This code can be used for performing Taxonomic Classification (Multiple levels (1-6): Phylum-Species), Functional Profiling (Multiple levels:1-3, 4: KO annotation), and vizualization (Bar graph, Spider Chart).
+#Install Parallel-META 3 from http://bioinfo.single-cell.cn/parallel-meta.html, extract and install software.
+wget http://bioinfo.single-cell.cn/Released_Software/parallel-meta/3.7/parallel-meta-suite-3.7-src.tar.gz
+tar –xzvf parallel-meta-3.tar.gz
+cd parallel-meta
+source install.sh
+#PM-parallel-meta is the profiling tool for 16S rRNA sequences in FASTA/FASTQ format for taxonomical and predictive functional profiling.
+#-R for paired end sequences
+PM-parallel-meta –R Seq_1.fastq Seq2.fastq –o Results –l 150 #Output folder would contain text files with taxonomic classification and functional profiling results (classification.txt, functions.txt)
+#Used for multi-sample feature selection (with a specified taxonomical level ((1-6: Phylum - Species, 7: OTU))) based on the taxonomical profiling results.
+#In the single sample profile list (list.txt), each row represents one sample, with sample ID and path to its classification.txt file.
+PM-select-taxa –l list.txt –o taxa.txt –L 5 #Specified taxonomic level is Genus
+#For multi-sample feature selection (with a specified KEGG pathway level (Level 1, 2, 3 or 4 (KO number)) and relative abundance) based on the functional profiling results.
+#In the single sample profile list (list.txt), each row represents one sample, with sample ID and path to its functions.txt file.
+PM-select-func –l list.txt –o func.txt –L 2
+#Plot bar chart for taxonomic classification results in R
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("tidyr")
+library(tidyr)
+install.packages("viridis")
+library(viridis)
+library(ggsci)
+mydata<- read.csv("taxagenus.csv")
+colnames(mydata)
+View(mydata)
+#plot<-ggplot(mydata, aes(x = Genus, y = relative_abundance..., fill = Genus)) +
+ # geom_col()
+#condition<-c(rep("BV" , 22) , rep("Normal" , 22))
+#Relative_abundance <- abs(rnorm(12 , 0 , 15))
+#Genus <- rep(c('g__Acidaminobacter','g__Bacillus','g__Candidatus_Pelagibacter','g__Candidatus_Portiera','g__Chitinophagaceae_Group','g__Christensenellaceae_Group','g__Clostridiaceae_Group','g__Clostridium','g__Desulfosporosinus','g__Desulfotomaculum','g__Enterococcus','g__Granulicatella','g__Heliobacterium','g__Lachnospiraceae_Group','g__Lactobacillus','g__Piscirickettsiaceae_Group','g__Rhodobacteraceae_Group''g__Ruminococcaceae_Group','g__Streptococcaceae_Group','g__Streptococcus','g__Vagococcus','Unclassified') , 4)
+#data <- data.frame(condition,Genus,Relative_abundance)
+#ggplot(mydata, aes(fill=Genus, y=Relative_abundance, x=condition)) +
+#  geom_bar(position="fill", stat="identity")
+plot<-ggplot(data = mydata, aes(x = condition, y = relative_abundance..., fill = Genus)) +
+  geom_bar(position="fill", stat='identity') +
+  scale_fill_viridis(discrete = T) +
+  ggtitle("Relative abundance of microbes of the human microbiome through taxonomic classification") +
+  theme_minimal() +
+  xlab("Genus")+ylab("Relative abundance")+theme(plot.title=element_text(family='serif', face='bold', colour='black', size=6), legend.key.size = unit(0.5, 'cm'), legend.title = element_text(size=8),legend.text = element_text(size=8))+labs(x = "Condition", y = "Relative abundance(%)")+theme_gray(base_size = 9)
+print(plot)
+#Plot spider chart for functional profiling results in R
+mydata<- read.csv("PRJNA684969_BV_func.csv")
+colnames(mydata)
+#Create dataframe with the pathways from functional profiling results along with their relative abundances
+data <- data.frame(
+  row.names = c("Bv", "normal"),
+  Environmental_adaptation=c(101427.261,55045.444),
+  Excretory_system=c(328.74518,1350.6995),
+  Biosynthesis_of_other_secondary_metabolites=c(679373.055,398045.61),
+  Endocrine_system=c(252855.692,240083.6),
+  Carbohydrate_metabolism=c(4529707.66,4398659.1),
+  Cell_growth_and_death=c(413215.486,411911.6),
+  Infectious_disease_parasitic=c(1302.97816,1888.0151),
+  Cancer_overview=c(188201.449,221507.84),
+  Neurodegenerative_disease=c(33617.9629,35075.341),
+  Immune_disease=c(23034.6363,27993.126),
+  Infectious_disease_viral=c(25875.898,29701.567),
+  Lipid_metabolism=c(920621.92,860291.9),
+  Metabolism_of_cofactors_and_vitamins=c(2027432.85,1482939.32),
+  Immune_system=c(153076.812,75277.518),
+  Replication_and_repair=c(1730398.71,1785593.17),
+  Amino_acid_metabolism=c(3013131.63,2054118.9),
+  Nucleotide_metabolism=c(1443705.01,1531553.56),
+  Signal_transduction=c(844862.39,607281.71),
+  Circulatory_system=c(128.57103,595.80809)
+)
+#Create a dataframe to set the minimum and maximum values for each of the pathways for the visualization
+max_min <- data.frame(   Environmental_adaptation=c(150000,0),
+                         Excretory_system=c(1700,0),
+                         Biosynthesis_of_other_secondary_metabolites=c(700000,0),
+                         Endocrine_system=c(300000,0),
+                         Carbohydrate_metabolism=c(5000000,0),
+                         Cell_growth_and_death=c(500000,0),
+                         Infectious_disease_parasitic=c(2000,0),
+                         Cancer_overview=c(250000,0),
+                         Neurodegenerative_disease=c(40000,0),
+                         Immune_disease=c(30000,0),
+                         Infectious_disease_viral=c(35000,0),
+                         Lipid_metabolism=c(1000000,0),
+                         Metabolism_of_cofactors_and_vitamins=c(2200000,0),
+                         Immune_system=c(200000,0),
+                         Replication_and_repair=c(2000000,0),
+                         Amino_acid_metabolism=c(3200000,0),
+                         Nucleotide_metabolism=c(1600000,0),
+                         Signal_transduction=c(1000000,0),
+                         Circulatory_system=c(800,0)
+)
+rownames(max_min) <- c("Max", "Min")
+
+# Bind the variable ranges to the data
+df <- rbind(max_min, data)
+df
+#Create a function for basic spider chart
+create_beautiful_radarchart <- function(data, color = "#00AFBB",
+                                        vlabels = colnames(data), vlcex = 0.7,
+                                        caxislabels = NULL, title = NULL, ...){
+  radarchart(
+    data, axistype = 1,
+    # Customize the polygon
+    pcol = color, pfcol = scales::alpha(color, 0.5), plwd = 2, plty = 1,
+    # Customize the grid
+    cglcol = "grey", cglty = 1, cglwd = 0.8,
+    # Customize the axis
+    axislabcol = "grey",
+    # Variable labels
+    vlcex = vlcex, vlabels = vlabels,
+    caxislabels = caxislabels, title = title, ...
+  )
+}
+op <- par(mar = c(1, 2, 2, 2))
+# Create the radar charts
+install.packages("fmsb")
+library(fmsb)
+#Using the function to create basic spider chart
+create_beautiful_radarchart(
+  data = df, caxislabels = c(0, 5, 10, 15, 20),
+  color = c("BLUE", "GREEN", "RED")
+)
+#Customizing the spider chart
+ggradar(
+  df,
+  values.radar = c("0", "5", "10"),
+  grid.min = 0, grid.mid = 5, grid.max = 10,
+  # Polygons
+  group.line.width = 1,
+  group.point.size = 3,
+  group.colours = c("#00AFBB", "#E7B800", "#FC4E07"),
+  background.circle.colour = "white",
+  gridline.mid.colour = "grey"
+)
+# Add an horizontal legend
+legend(
+  x = "topright", legend = rownames(df[-c(1,2),]), horiz = TRUE,
+  bty = "n", pch = 10 , col = c("BLUE", "GREEN", "RED"),
+  text.col = "black", cex = 0.5, pt.cex = 1
+)
+par(op)
