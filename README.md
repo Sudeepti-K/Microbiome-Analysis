@@ -17,10 +17,10 @@ Pre-requisites for Linux:
 
 It is a good idea to update all packages and use build-essential to install gcc before using the toolkit.
 
-**_sudo apt upgrade
-sudo apt update
-sudo apt install build-essential
-sudo apt install R-base-core_**
+**_sudo apt upgrade_**
+**_sudo apt update_**
+**_sudo apt install build-essential_**
+**_sudo apt install R-base-core_**
 
 PM-parallel-meta is the profiling tool for 16S rRNA sequences in FASTA/FASTQ format for taxonomical and predictive functional profiling.
 
