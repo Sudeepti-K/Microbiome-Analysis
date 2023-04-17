@@ -25,14 +25,14 @@ library(ggsci)
 mydata<- read.csv("taxagenus.csv")
 colnames(mydata)
 View(mydata)
-#plot<-ggplot(mydata, aes(x = Genus, y = relative_abundance..., fill = Genus)) +
- # geom_col()
-#condition<-c(rep("BV" , 22) , rep("Normal" , 22))
-#Relative_abundance <- abs(rnorm(12 , 0 , 15))
-#Genus <- rep(c('g__Acidaminobacter','g__Bacillus','g__Candidatus_Pelagibacter','g__Candidatus_Portiera','g__Chitinophagaceae_Group','g__Christensenellaceae_Group','g__Clostridiaceae_Group','g__Clostridium','g__Desulfosporosinus','g__Desulfotomaculum','g__Enterococcus','g__Granulicatella','g__Heliobacterium','g__Lachnospiraceae_Group','g__Lactobacillus','g__Piscirickettsiaceae_Group','g__Rhodobacteraceae_Group''g__Ruminococcaceae_Group','g__Streptococcaceae_Group','g__Streptococcus','g__Vagococcus','Unclassified') , 4)
-#data <- data.frame(condition,Genus,Relative_abundance)
-#ggplot(mydata, aes(fill=Genus, y=Relative_abundance, x=condition)) +
-#  geom_bar(position="fill", stat="identity")
+plot<-ggplot(mydata, aes(x = Genus, y = relative_abundance..., fill = Genus)) +
+  geom_col()
+condition<-c(rep("BV" , 22) , rep("Normal" , 22))
+Relative_abundance <- abs(rnorm(12 , 0 , 15))
+Genus <- rep(c('g__Acidaminobacter','g__Bacillus','g__Candidatus_Pelagibacter','g__Candidatus_Portiera','g__Chitinophagaceae_Group','g__Christensenellaceae_Group','g__Clostridiaceae_Group','g__Clostridium','g__Desulfosporosinus','g__Desulfotomaculum','g__Enterococcus','g__Granulicatella','g__Heliobacterium','g__Lachnospiraceae_Group','g__Lactobacillus','g__Piscirickettsiaceae_Group','g__Rhodobacteraceae_Group''g__Ruminococcaceae_Group','g__Streptococcaceae_Group','g__Streptococcus','g__Vagococcus','Unclassified') , 4)
+data <- data.frame(condition,Genus,Relative_abundance)
+ggplot(mydata, aes(fill=Genus, y=Relative_abundance, x=condition)) +
+  geom_bar(position="fill", stat="identity")
 plot<-ggplot(data = mydata, aes(x = condition, y = relative_abundance..., fill = Genus)) +
   geom_bar(position="fill", stat='identity') +
   scale_fill_viridis(discrete = T) +
