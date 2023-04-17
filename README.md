@@ -11,6 +11,7 @@ Parallel-Meta Suite is a comprehensive and full-automatic computational toolkit 
 
 
 For optimal performance, it is recommended to use a computer with the following specs:
+
 **_RAM: 8+ GB_**
 
 **_CPU: 4+ cores, 3.3+ GHz/core_**
