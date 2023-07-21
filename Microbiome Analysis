@@ -1,139 +1,226 @@
 #Integrated pipeline for the in-silico analysis of 16s rRNA raw sequence microbiome data.
 #This code can be used for performing Taxonomic Classification (Multiple levels (1-6): Phylum-Species), Functional Profiling (Multiple levels:1-3, 4: KO annotation), and vizualization (Bar graph, Spider Chart).
 #Install Parallel-META 3 from http://bioinfo.single-cell.cn/parallel-meta.html, extract and install software.
+
 wget http://bioinfo.single-cell.cn/Released_Software/parallel-meta/3.7/parallel-meta-suite-3.7-src.tar.gz
 tar –xzvf parallel-meta-3.tar.gz
 cd parallel-meta
 source install.sh
+
 #PM-parallel-meta is the profiling tool for 16S rRNA sequences in FASTA/FASTQ format for taxonomical and predictive functional profiling.
 #-R for paired end sequences
+
 PM-parallel-meta –R Seq_1.fastq Seq2.fastq –o Results –l 150 #Output folder would contain text files with taxonomic classification and functional profiling results (classification.txt, functions.txt)
+
 #Used for multi-sample feature selection (with a specified taxonomical level ((1-6: Phylum - Species, 7: OTU))) based on the taxonomical profiling results.
 #In the single sample profile list (list.txt), each row represents one sample, with sample ID and path to its classification.txt file.
+
 PM-select-taxa –l list.txt –o taxa.txt –L 5 #Specified taxonomic level is Genus
+
 #For multi-sample feature selection (with a specified KEGG pathway level (Level 1, 2, 3 or 4 (KO number)) and relative abundance) based on the functional profiling results.
 #In the single sample profile list (list.txt), each row represents one sample, with sample ID and path to its functions.txt file.
-PM-select-func –l list.txt –o func.txt –L 2
-#Plot bar chart for taxonomic classification results in R
-install.packages("ggplot2")
-library(ggplot2)
-install.packages("tidyr")
-library(tidyr)
-install.packages("viridis")
-library(viridis)
-library(ggsci)
-mydata<- read.csv("taxagenus.csv")
-colnames(mydata)
-View(mydata)
-plot<-ggplot(mydata, aes(x = Genus, y = relative_abundance..., fill = Genus)) +
-  geom_col()
-condition<-c(rep("BV" , 22) , rep("Normal" , 22))
-Relative_abundance <- abs(rnorm(12 , 0 , 15))
-Genus <- rep(c('g__Acidaminobacter','g__Bacillus','g__Candidatus_Pelagibacter','g__Candidatus_Portiera','g__Chitinophagaceae_Group','g__Christensenellaceae_Group','g__Clostridiaceae_Group','g__Clostridium','g__Desulfosporosinus','g__Desulfotomaculum','g__Enterococcus','g__Granulicatella','g__Heliobacterium','g__Lachnospiraceae_Group','g__Lactobacillus','g__Piscirickettsiaceae_Group','g__Rhodobacteraceae_Group''g__Ruminococcaceae_Group','g__Streptococcaceae_Group','g__Streptococcus','g__Vagococcus','Unclassified') , 4)
-data <- data.frame(condition,Genus,Relative_abundance)
-ggplot(mydata, aes(fill=Genus, y=Relative_abundance, x=condition)) +
-  geom_bar(position="fill", stat="identity")
-plot<-ggplot(data = mydata, aes(x = condition, y = relative_abundance..., fill = Genus)) +
-  geom_bar(position="fill", stat='identity') +
-  scale_fill_viridis(discrete = T) +
-  ggtitle("Relative abundance of microbes of the human microbiome through taxonomic classification") +
-  theme_minimal() +
-  xlab("Genus")+ylab("Relative abundance")+theme(plot.title=element_text(family='serif', face='bold', colour='black', size=6), legend.key.size = unit(0.5, 'cm'), legend.title = element_text(size=8),legend.text = element_text(size=8))+labs(x = "Condition", y = "Relative abundance(%)")+theme_gray(base_size = 9)
-print(plot)
-#Plot spider chart for functional profiling results in R
-mydata<- read.csv("PRJNA684969_BV_func.csv")
-colnames(mydata)
-#Create dataframe with the pathways from functional profiling results along with their relative abundances
-data <- data.frame(
-  row.names = c("Bv", "normal"),
-  Environmental_adaptation=c(101427.261,55045.444),
-  Excretory_system=c(328.74518,1350.6995),
-  Biosynthesis_of_other_secondary_metabolites=c(679373.055,398045.61),
-  Endocrine_system=c(252855.692,240083.6),
-  Carbohydrate_metabolism=c(4529707.66,4398659.1),
-  Cell_growth_and_death=c(413215.486,411911.6),
-  Infectious_disease_parasitic=c(1302.97816,1888.0151),
-  Cancer_overview=c(188201.449,221507.84),
-  Neurodegenerative_disease=c(33617.9629,35075.341),
-  Immune_disease=c(23034.6363,27993.126),
-  Infectious_disease_viral=c(25875.898,29701.567),
-  Lipid_metabolism=c(920621.92,860291.9),
-  Metabolism_of_cofactors_and_vitamins=c(2027432.85,1482939.32),
-  Immune_system=c(153076.812,75277.518),
-  Replication_and_repair=c(1730398.71,1785593.17),
-  Amino_acid_metabolism=c(3013131.63,2054118.9),
-  Nucleotide_metabolism=c(1443705.01,1531553.56),
-  Signal_transduction=c(844862.39,607281.71),
-  Circulatory_system=c(128.57103,595.80809)
-)
-#Create a dataframe to set the minimum and maximum values for each of the pathways for the visualization
-max_min <- data.frame(   Environmental_adaptation=c(150000,0),
-                         Excretory_system=c(1700,0),
-                         Biosynthesis_of_other_secondary_metabolites=c(700000,0),
-                         Endocrine_system=c(300000,0),
-                         Carbohydrate_metabolism=c(5000000,0),
-                         Cell_growth_and_death=c(500000,0),
-                         Infectious_disease_parasitic=c(2000,0),
-                         Cancer_overview=c(250000,0),
-                         Neurodegenerative_disease=c(40000,0),
-                         Immune_disease=c(30000,0),
-                         Infectious_disease_viral=c(35000,0),
-                         Lipid_metabolism=c(1000000,0),
-                         Metabolism_of_cofactors_and_vitamins=c(2200000,0),
-                         Immune_system=c(200000,0),
-                         Replication_and_repair=c(2000000,0),
-                         Amino_acid_metabolism=c(3200000,0),
-                         Nucleotide_metabolism=c(1600000,0),
-                         Signal_transduction=c(1000000,0),
-                         Circulatory_system=c(800,0)
-)
-rownames(max_min) <- c("Max", "Min")
 
-# Bind the variable ranges to the data
-df <- rbind(max_min, data)
-df
-#Create a function for basic spider chart
-create_beautiful_radarchart <- function(data, color = "#00AFBB",
-                                        vlabels = colnames(data), vlcex = 0.7,
-                                        caxislabels = NULL, title = NULL, ...){
-  radarchart(
-    data, axistype = 1,
-    # Customize the polygon
-    pcol = color, pfcol = scales::alpha(color, 0.5), plwd = 2, plty = 1,
-    # Customize the grid
-    cglcol = "grey", cglty = 1, cglwd = 0.8,
-    # Customize the axis
-    axislabcol = "grey",
-    # Variable labels
-    vlcex = vlcex, vlabels = vlabels,
-    caxislabels = caxislabels, title = title, ...
-  )
+PM-select-func –l list.txt –o func.txt –L 2
+
+
+#Plot bar chart for abundance results in R (Can be done for both Taxonomic classification and Functional Profiling results)
+#Abundances have been normalized using the log10(1+x) normalization
+
+
+library(ggplot2)
+library(tidyr)
+data<- read.csv("Race.csv") #Contains three columns (Race,Taxa,Abundance)
+
+Race<-ggplot(R, aes(x=Race, y=Abundance, fill=Pathway)) +geom_bar(aes(x=Race, y=Abundance, fill=Pathway), stat="identity", alpha=0.8)+theme(legend.position = "bottom")
+Ethnicity<-ggplot(E, aes(x=Ethnicity, y=Abundance, fill=Pathways)) +geom_bar(aes(x=Ethnicity, y=Abundance, fill=Pathways), stat="identity", alpha=0.8)+theme(legend.position = "bottom")
+Location<-ggplot(L, aes(x=Location, y=Abundance, fill=Pathway)) +geom_bar(aes(x=Location, y=Abundance, fill=Pathway), stat="identity", alpha=0.8)+theme(legend.position = "bottom")
+ggarrange(Race,Ethnicity,Location, ncol = 3, nrow =1, common.legend = TRUE,legend = "bottom")
+
+#Plot circular bar chart for abundance results in R (Can be done for both Taxonomic classification and Functional Profiling results)
+R1<-ggplot(R, aes(x=Race, y=Abundance, fill=Pathway)) +geom_bar(aes(x=Race, y=Abundance, fill=Pathway), stat="identity", alpha=1, color = "white")+theme_minimal()+theme(legend.position = "bottom")+coord_polar()
+E2<-ggplot(E, aes(x=Ethnicity, y=Abundance, fill=Pathways)) +geom_bar(aes(x=Ethnicity, y=Abundance, fill=Pathways), stat="identity", alpha=1, color = "white")+theme_minimal()+theme(legend.position = "bottom")+coord_polar()+ theme(axis.text.x = element_text(size = 10))
+L2<-ggplot(L, aes(x=Location, y=Abundance, fill=Pathway)) +geom_bar(aes(x=Location, y=Abundance, fill=Pathway), stat="identity", alpha=1, color = "white")+theme_minimal()+theme(legend.position = "bottom")+coord_polar()+ theme(axis.text.x = element_text(size = 10))
+ggarrange(R1,E1,L1, ncol = 3, nrow =1, common.legend = TRUE,legend = "bottom")
+
+#Transform absolute abundance count data using log10 transformation
+
+count<-read.csv("taxa_genus_count.csv",header=TRUE)
+transcount<-log10(1 + count) #(1+x) is added to avoid infinity values during log10 transformation
+
+#Alpha-Diversity
+
+library(vegan)
+library(ggplot2)
+library(ggpubr)
+
+# Load data with first column sample_id,second group, and then read counts (.count))
+
+data <- read.csv(file.choose(),header=TRUE) # replace "data.csv" with your data file name
+
+# Calculate diversity using vegan
+
+diversity <- diversity(data[,6:ncol(data)]) # assuming the first six columns are metadata. Can be adjusted according to number of metadata columns
+
+# Create a boxplot using ggplot2
+
+RAD<-ggboxplot(data, x = "Race", y = "diversity", ylab = "Alpha-diversity", color = "black", size=1, alpha=0.6, fill = "Race", palette = c("#00AFBB", "#E7B800", "#FC4E07","#CC33FF","#990000","#4682B733", "#F17925","#0AAC00"),  draw_quantiles = NULL,outlier.shape = NA,add="jitter")
+RAD<-RAD+theme(panel.background = element_rect(colour='black', fill = 'grey92'),plot.background = element_rect(fill = 'white'),axis.text.x = element_text(colour='black'),axis.text.y = element_text(colour='black'),legend.position="none")+grids(linetype="solid",color = "white")+ggtitle("Alpha-Diversity amongst PTB samples across different Races")
+LAD<-ggboxplot(data, x = "Location", y = "diversity", ylab = "Alpha-diversity", color = "black", size=1, alpha=0.6, fill = "Location", palette = c("#00AFBB", "#E7B800", "#FC4E07","#CC33FF","#990000","#4682B733", "#F17925","#0AAC00"),  draw_quantiles = NULL,outlier.shape = NA,add="jitter")
+LAD<-LAD+theme(panel.background = element_rect(colour='black', fill = 'grey92'),plot.background = element_rect(fill = 'white'),axis.text.x = element_text(colour='black'),axis.text.y = element_text(colour='black'),legend.position="none")+grids(linetype="solid",color = "white")+ggtitle("Alpha-Diversity amongst PTB samples across different Locations")
+EAD<-ggboxplot(data, x = "Ethnicity", y = "diversity", ylab = "Alpha-diversity", color = "black", size=1, alpha=0.6, fill = "Ethnicity", palette = c("#00AFBB", "#E7B800", "#FC4E07","#CC33FF","#990000","#4682B733", "#F17925","#0AAC00"),  draw_quantiles = NULL,outlier.shape = NA,add="jitter")
+EAD<-EAD+theme(panel.background = element_rect(colour='black', fill = 'grey92'),plot.background = element_rect(fill = 'white'),axis.text.x = element_text(colour='black'),axis.text.y = element_text(colour='black'),legend.position="none")+grids(linetype="solid",color = "white")+ggtitle("Alpha-Diversity amongst PTB samples across different Ethnicities")
+CombAD<-ggarrange(RAD,EAD,LAD, ncol = 3, nrow = 1, common.legend = TRUE,legend = "right")
+annotate_figure(CombAD, top = text_grob("Alpha-Diversity based on Race, Ethnicity and Location",size = 14))
+
+
+#Perform PERMANOVA analysis
+
+library(vegan)
+meta<-read.csv("metadata.csv",header=TRUE)
+adonis2(transcount ~ Race, data = meta, method = "manhattan") #Calculates variation in abundances with respect to Race from metadata. Other features of metadata can also be considered
+
+
+#Visualise results PERMANOVA Analysis with a barchart
+#Dataframe to contain two columns: Microbes and R2-Value
+
+AR<-read.csv(file.choose(),header=TRUE)
+ggplot(AR, aes(x=Pathways, y=R2.Value,fill=Pathways))+geom_bar(stat="identity")+ theme_classic()+theme(axis.text.x = element_blank(),legend.position="none")+ggtitle("R2-Values of Pathways after PERMANOVA Analysis")+ ylim(0, 0.38)+ coord_flip()+ scale_y_continuous(breaks=c(0,0.1,0.2,0.3,0.4))
+
+
+#Density Plot for significant microbes showing high variations
+library(ggplot2)
+library(ggpubr)
+Finegoldia<-ggplot(data, aes(fill = Race, x = Finegoldia)) +geom_density(alpha = 0.5,size=0.8)
+Lactobacillus<-ggplot(data, aes(fill = Race, x = Finegoldia)) +geom_density(alpha = 0.5,size=0.8)
+
+#Combine and arrange density plots together
+ggarrange(Finegoldia,Lactobacillus,..., ncol = 6, nrow = 6, common.legend = TRUE,legend = "right") # "..." for plots of rest of the microbes. ncol and nrow to be adjusted accordingly
+
+#PCoA analysis
+#Create a custom function to carry out PCoA analysis
+#Input file is a dataframe with metadata in the first column. The rest of the columns have normalized abundance counts
+#First column to be names as "group"
+
+pcoafunc<-function(data, pc = 12,
+         level = 0.68,
+         p.value = TRUE){
+  dis <- vegan::vegdist(data[, -1], method = "manhattan")
+  pcoa <- ape::pcoa(dis, correction = "none", rn = NULL)
+  eig <- round(100*pcoa$values[1:3, 2], 2)
+  site <- pcoa$vectors[,1:3]
+  p.v <- vegan::adonis2(data[, -1]~data$group,
+                        data = data,method="manhattan")$aov.tab$`Pr(>F)`[1]
+  if(all(rownames(site) == rownames(data))){
+    pca.data <- data.frame(group = data$group, site)
+    colnames(pca.data)[2:4] <- paste0("PCoA", 1:3)
+  }
+  label <- data.frame(min = apply(pca.data[, 2:4], 2, min),
+                      max = apply(pca.data[, 2:4], 2, max))
+  label$mean <- (label$min + label$max)/2
+  if (pc == 12) {
+    x <- "PCoA1"
+    y <- "PCoA2"
+    x.posi <- label[1, 3]
+    y.posi <- label[2, 2]
+    x.lab <- paste0(x, ": ", eig[1], "%")
+    y.lab <- paste0(y, ": ", eig[2], "%")
+  }else if (pc == 13) {
+    x <- "PCoA1"
+    y <- "PCoA3"
+    x.posi <- label[1, 3]
+    y.posi <- label[3, 2]
+    x.lab <- paste0(x, ": ", eig[1], "%")
+    y.lab <- paste0(y, ": ", eig[3], "%")
+  }else if (pc == 23) {
+    x <- "PCoA2"
+    y <- "PCoA3"
+    x.posi <- label[2, 3]
+    y.posi <- label[3, 2]
+    x.lab <- paste0(x, ": ", eig[2], "%")
+    y.lab <- paste0(y, ": ", eig[3], "%")
+  }
+  p <- ggplot(data = pca.data,
+              aes_string(x = x, y = y, color = "group")) +
+    geom_point(aes(color = group),
+               size = 1.5, alpha = 1) +
+    stat_ellipse(level = level,  linetype = 3,
+                 geom = "polygon", alpha = 0.2,
+                 aes(fill = group), show.legend = FALSE) +
+    xlab(x.lab) + ylab(y.lab)
+  if (p.value) {
+    p <- p +
+      annotate(geom = "text", x = x.posi, y = y.posi*1.25,
+               label = paste0("adonis: p.value =  ", p.v),
+               size = 4.5, fontface = "bold.italic",
+               colour = ifelse(p.v < 0.05, "black", "red1"))
+  }
+  p <- p + theme(panel.grid = element_line(color = 'gray90', size = 0.1),
+                 panel.background = element_rect(color = 'gray60',
+                                                 fill = 'transparent', size = 1),
+                 axis.text = element_text(size = 12, face = "bold", color = "black"),
+                 axis.text.x = element_text(colour = "black", size = 12, face = "bold"),
+                 axis.title = element_text(size = 12, face = "bold"),
+                 legend.text = element_text(size = 10, face = "bold"),
+                 legend.title = element_blank(),
+                 legend.position = "right",
+                 panel.border = element_rect(colour = "black", fill = "transparent"),
+                 legend.background = element_rect(fill = "transparent"),
+                 legend.key = element_rect(fill = "transparent"))
+  return(p)
 }
-op <- par(mar = c(1, 2, 2, 2))
-# Create the radar charts
-install.packages("fmsb")
-library(fmsb)
-#Using the function to create basic spider chart
-create_beautiful_radarchart(
-  data = df, caxislabels = c(0, 5, 10, 15, 20),
-  color = c("BLUE", "GREEN", "RED")
-)
-#Customizing the spider chart
-ggradar(
-  df,
-  values.radar = c("0", "5", "10"),
-  grid.min = 0, grid.mid = 5, grid.max = 10,
-  # Polygons
-  group.line.width = 1,
-  group.point.size = 3,
-  group.colours = c("#00AFBB", "#E7B800", "#FC4E07"),
-  background.circle.colour = "white",
-  gridline.mid.colour = "grey"
-)
-# Add an horizontal legend
-legend(
-  x = "topright", legend = rownames(df[-c(1,2),]), horiz = TRUE,
-  bty = "n", pch = 10 , col = c("BLUE", "GREEN", "RED"),
-  text.col = "black", cex = 0.5, pt.cex = 1
-)
-par(op)
+
+
+#Usage
+
+pcoafunc(data,pc=12,level = 0.68,p.value=TRUE) #Create multiple pcoa graphs on the basis of metadata and combine plots using ggarrange
+
+#Calculate inter-sample distances based on normalized taxonomic counts (sample cladogram)
+
+library(vegan)
+dist<-vegdist(NTC[, -1], method = "manhattan")
+
+#Generate tree based on NJ method
+
+my_nj <- ape::nj(dist)
+
+#Build tree using ggtree
+
+SR<-ggtree(my_nj)
+
+#Highlight clades according to internal node labels. Mapping(aes) in Geom_hilight helps in highlighting tips according to metadata.
+#To get internal node information, SR$data can be accessed and saved into "meta"
+#Meta contains one compulsory column "node" which is the internal node number in the phylogenetic tree on the basis of which nodes will be highlighted
+
+SR<-ggtree(my_nj,layout="circular",size=1,color="blue",branch.length = "none")+ geom_hilight(data=meta, mapping=aes(node=node, fill=Race), align="both",alpha=0.5)
+
+#Add annotations according to metadata where data contains two columns: "taxa" and desired metadata (Eg. Race)
+#In this example samples were assigned their respective metadata information (Race/Ethnicity/Geographical Location)
+#Create multiple inter-sample distances tree graphs on the basis of metadata and combine plots using ggarrange
+
+SR<-SR%<+% SRData + geom_tiplab(aes(color=Race),hjust=-.2)+geom_tippoint(aes(size=5, shape=Race, color=Race), alpha=1)
+
+#Carry out LEfSE Analysis on MicrobiomeAnalyst web server to identify microbes that act as biomoarkers
+#Create phylogenetic tree on the basis of 16s rRNA sequences using MEGA-X. Visualise it using ggtree library in R
+
+#Import tree using ggtree library in Newick format
+
+library(ggtree)
+tree <- read.tree("Tree.nwk")
+
+#Build tree using ggtree
+
+p<-ggtree(tree)
+
+#Highlight clades according to internal node labels. Mapping(aes) in Geom_hilight helps in highlighting tips according to metadata.
+#Data contains one compulsory column "node" which is the internal node number in the phylogenetic tree on the basis of which nodes will be highlighted
+
+p<-ggtree(tree,layout="circular",size=2,color="black",branch.length = "none") +
+  geom_hilight(node=37, fill="lightyellow",color="black",linewidth=1,alpha=0.2)+ geom_hilight(data=data, mapping=aes(node=node, fill=Race), align="both",alpha=1)+ geom_hilight(node=39,fill="lightyellow",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=40,fill="yellow",color="black",linewidth=1,alpha=0.4)+ geom_hilight(node=41,fill="lightblue",color="black",linewidth=1,alpha=0.3)+ geom_hilight(node=42,fill="lightblue",color="black",linewidth=1,alpha=0.3)+ geom_hilight(node=43,fill="lightblue",color="black",linewidth=1,alpha=0.3)+ geom_hilight(node=49,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=44,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=68,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=69,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=64,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=59,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=57,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=53,fill="skyblue",color="black",linewidth=1,alpha=0.2)+ geom_hilight(node=54,fill="blue",color="black",linewidth=1,alpha=0.1)+ geom_hilight(node=55,fill="blue",color="black",linewidth=1,alpha=0.1)+ geom_hilight(node=49,fill="blue",color="black",linewidth=1,alpha=0.1)+ geom_hilight(node=44,fill="blue",color="black",linewidth=1,alpha=0.09)+
+  geom_nodepoint(color="red", alpha=1, size=5)
+
+
+#Add annotations according to metadata where data contains two columns: "taxa" and desired metadata (Eg. Race)
+#In this example microbes that act as biomarkers were assigned their respective metadata information (Race/Ethnicity/Geographical Location), while others were labelled as "Not a Biomarker"
+#Create multiple phylogenetic tree with Biomarker information graphs on the basis of metadata and combine plots using ggarrange
+
+p%<+% data + geom_tiplab(aes(color=Race),hjust=-.2)+geom_tippoint(aes(size=5, shape=Race, color=Race), alpha=1)+scale_shape_manual(values = c(1,2,3,4,5,6,7,8,16,17)) #Shapes manually provided
