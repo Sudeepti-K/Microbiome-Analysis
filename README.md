@@ -49,6 +49,3 @@ Multi-sample feature selection based on the taxonomical profiling results comman
 
 
 Plot bar chart for taxonomic classification results in R libraries: **_ggplot2, tidyr, viridis, ggsci_**
-
-
-Plot spider chart for functional profiling results in R libraries: **_custom function, radarchart, fmsb, ggradar_**
