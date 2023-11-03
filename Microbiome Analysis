@@ -10,7 +10,10 @@ source install.sh
 #PM-parallel-meta is the profiling tool for 16S rRNA sequences in FASTA/FASTQ format for taxonomical and predictive functional profiling.
 #-R for paired end sequences
 
-PM-parallel-meta –R Seq_1.fastq Seq2.fastq –o Results –l 150 #Output folder would contain text files with taxonomic classification and functional profiling results (classification.txt, functions.txt)
+PM-parallel-meta –R Seq_1.fastq Seq2.fastq –o Results –l 150 -D G #Greengenes database used
+PM-parallel-meta –R Seq_1.fastq Seq2.fastq –o Results –l 150 -D S #SILVA database used
+
+#Output folder would contain text files with taxonomic classification and functional profiling results (classification.txt, functions.txt)
 
 #Used for multi-sample feature selection (with a specified taxonomical level ((1-6: Phylum - Species, 7: OTU))) based on the taxonomical profiling results.
 #In the single sample profile list (list.txt), each row represents one sample, with sample ID and path to its classification.txt file.
