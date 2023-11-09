@@ -203,8 +203,35 @@ SR<-ggtree(my_nj,layout="circular",size=1,color="blue",branch.length = "none")+ 
 SR<-SR%<+% SRData + geom_tiplab(aes(color=Race),hjust=-.2)+geom_tippoint(aes(size=5, shape=Race, color=Race), alpha=1)
 
 #Carry out LEfSE Analysis on MicrobiomeAnalyst web server to identify microbes that act as biomoarkers
-#Create phylogenetic tree on the basis of 16s rRNA sequences using MEGA-X. Visualise it using ggtree library in R
+#Carry out ANCOM-BC analysis in R
+library(TreeSummarizedExperiment)
+library(phyloseq)
+library(ggplot2)
+taxa<-read.csv("Taxa.csv") #Taxa are rows, samples are columns. First column Taxa names, rest abundances in samples
+meta<-read.csv("meta.csv") #Samples are rows
+taxonomy<-read.csv("Taxanomy.csv") # Contains columns Phylum, Class, Order, Family, Genus of all microbes found in taxnomic classification 
+rownames(taxa)<-c(taxa[,1])
+taxa<-taxa[,-1]
+otu_mat = as.matrix(taxa)
+assays = SimpleList(counts = otu_mat)
+rownames(meta)<-c(meta[,1])
+meta<-meta[,-1]
+smd = data.frame(meta,stringsAsFactors = FALSE)
+smd = DataFrame(smd)
+colnames(taxonomy)[1] = "Phylum"
+tax_tab = as.matrix(taxonomy)
+rownames(tax_tab) = rownames(otu_mat)
+colnames(tax_tab) = c("Phylum", "Class", "Order","Family", "Genus")
+tax_tab = DataFrame(tax_tab)
+tse = TreeSummarizedExperiment(assays = assays, colData = smd, rowData = tax_tab) # Creates a TreeSummarizedExperiment object for Taxa, meta, and taxonomy
+pseq = makePhyloseqFromTreeSummarizedExperiment(tse) # Makes Phyloseq object from TreeSummarizedExperiment object
+tse_alt = agglomerateByRank(tse, "Genus") #Ranks by Genus
+pseq = makePhyloseqFromTreeSummarizedExperiment(tse_alt) # Creates Phyloseq object ranked by Genus
+out = ancombc(phyloseq=pseq, formula = "Race",p_adj_method="bonferroni")
+results<-as.data.frame(out$res)
+AI_G<-ggplot(AI, aes(x = Taxon, y = LogFC)) +geom_bar(aes(x=Taxon, y=LogFC, fill = ifelse(Q.Val < 0.05, "Significant", "Not Significant")), stat="identity", alpha=0.8) +labs(x = "Microbes",y = "LogFC values",fill="LogFC",title = "Significant Microbial Biomarkers from ANCOM-BC Results (American-Indian Race)")+theme_minimal()+coord_flip()+    geom_text(aes(label = Q.Val), size = 3,position = position_dodge(width = 0.5), hjust = 1)
 
+#Create phylogenetic tree on the basis of 16s rRNA sequences using MEGA-X. Visualise it using ggtree library in R
 #Import tree using ggtree library in Newick format
 
 library(ggtree)
