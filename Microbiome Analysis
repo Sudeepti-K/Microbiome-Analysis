@@ -207,6 +207,7 @@ SR<-SR%<+% SRData + geom_tiplab(aes(color=Race),hjust=-.2)+geom_tippoint(aes(siz
 library(TreeSummarizedExperiment)
 library(phyloseq)
 library(ggplot2)
+library(mia)
 taxa<-read.csv("Taxa.csv") #Taxa are rows, samples are columns. First column Taxa names, rest abundances in samples
 meta<-read.csv("meta.csv") #Samples are rows
 taxonomy<-read.csv("Taxanomy.csv") # Contains columns Phylum, Class, Order, Family, Genus of all microbes found in taxnomic classification 
